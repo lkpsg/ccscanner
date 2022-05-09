@@ -24,6 +24,12 @@ def main():
         with file:
             input = file.read()
             tree = cmp.parse(input, path=name)
+            if args.tree:
+                # Print out AST
+                print(repr(tree))
+            else:
+                # Pretty print
+                print(str(tree), end='')
 
 if __name__ == '__main__':
     main()

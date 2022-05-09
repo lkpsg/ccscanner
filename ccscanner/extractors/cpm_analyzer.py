@@ -2,7 +2,7 @@ import re
 import logging
 
 import ccscanner.utils.cmakelists_parsing.parsing as cmp
-from ccscanner.utils.utils import remove_rstrip
+from ccscanner.utils.utils import remove_lstrip, remove_rstrip
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

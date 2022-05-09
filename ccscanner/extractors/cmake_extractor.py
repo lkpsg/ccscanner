@@ -1,21 +1,23 @@
 import re
 import logging
 import os
-from typing import NamedTuple
 
 from ccscanner.extractors.extractor import Extractor
 from ccscanner.extractors.dependency import Dependency
+import ccscanner.utils.cmakelists_parsing.parsing as cmp
+from typing import NamedTuple
 from ccscanner.extractors.utils import *
 from ccscanner.utils.utils import read_txt, remove_lstrip, remove_rstrip
+from ccscanner.extractors.conan_extractor import ConanExtractor
 from ccscanner.extractors.cpm_analyzer import cpm_func_analyzer
-import ccscanner.utils.cmakelists_parsing.parsing as cmp
-
+from ccscanner.extractors.hunter_analyzer import hunter_func_analyzer
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 REGEX_OPTIONS = re.DOTALL | re.IGNORECASE | re.MULTILINE
 PROJECT_VERSION = re.compile(
     "^\\s*set\\s*\\(\\s*VERSION\\s*\"([^\"]*)\"\\)", REGEX_OPTIONS)
+
 SET_VAR_REGEX = re.compile(
     "^\\s*set\\s*\\(\\s*([a-zA-Z0-9_\\-]*)\\s+\"?([a-zA-Z0-9_\\-\\.\\$\\{\\}]*)\"?\\s*\\)", REGEX_OPTIONS)
 INL_VAR_REGEX = re.compile("(\\$\\s*\\{([^\\}]*)\\s*\\})", REGEX_OPTIONS)
@@ -34,15 +36,21 @@ FIND_LIBRARY_OPTIONS = ['hints', 'paths', 'path_suffixes', 'doc',
 PKG_CHECK_MODULES_OPTIONS = ['required', 'quiet', 'no_cmake_path',
                              'no_cmake_environment_path', 'imported_target', 'global']
 OPERATORS = ['>=', '<=', '=', '<', '>']
+CONAN_CMAKE_OPTIONS = ['generators', 'options', 'basic_setup', 'build', 'arch',
+                       'conanfile', 'build_type',
+                       'configuration_types', 'profile', 'profile_auto', 'conan_command', 'no_load', 'imports', 'install_folder', 'env', 'settings']
 
 
 class Lib(NamedTuple):
     filenames: list
     version: str
     fromfile: str
-    content: str
-    extractor_type: str
+    content: dict
 
+# TODO: FetchContent
+# https://cmake.org/cmake/help/latest/module/FetchContent.html
+## TODO: ExternalProject
+## https://cmake.org/cmake/help/latest/module/ExternalProject.html#module:ExternalProject, it is used by cpm.cmake
 
 class CmakeExtractor(Extractor):
     def __init__(self, target) -> None:
@@ -70,7 +78,7 @@ class CmakeExtractor(Extractor):
             dep_name = remove_lstrip(basename, 'find')
             dep_name = remove_rstrip(dep_name, '.cmake')
             dep = Dependency(dep_name, None)
-            dep.add_evidence(self.type, self.target, self.target, 'High')
+            dep.add_evidence(self.type, self.target, 'High')
             self.add_dependency(dep)
 
         contents = read_txt(self.target)
@@ -83,8 +91,10 @@ class CmakeExtractor(Extractor):
         self.find_package_analyzer(contents_replaced)
         self.get_deps_regex(contents_replaced)
         self.pkg_module_analyzer(contents_replaced)
+        self.conan_cmake_analyzer(contents_replaced)
         self.check_library_exists_analyzer(contents_replaced)
         self.cpm_analyzer(contents_replaced)
+        self.hunter_analyzer(contents_replaced)
 
 
     def get_deps_regex(self, contents):
@@ -106,7 +116,7 @@ class CmakeExtractor(Extractor):
                     version = context_splited[index+1].strip(')')
             if project_name and version:
                 dep = Dependency(project_name, version)
-                dep.add_evidence(self.type, context, self.target, 'High')
+                dep.add_evidence(self.type, context, 'High')
                 self.add_dependency(dep)
                 p = next(projects, None)
                 return
@@ -120,7 +130,7 @@ class CmakeExtractor(Extractor):
             v = next(versions, None)
         if project_name:
             dep = Dependency(project_name, version)
-            dep.add_evidence(self.type, context, self.target, '')
+            dep.add_evidence(self.type, context, '')
             self.add_dependency(dep)
         else:
             self.analyze_version_command(contents)
@@ -163,7 +173,6 @@ class CmakeExtractor(Extractor):
             else:
                 cursor -= 1
 
-
     def find_library_analyzer(self, contents):
         # pattern = '(find_library\s*\([^)]*\))'
         pattern1 = 'find_library\s*\('
@@ -186,7 +195,7 @@ class CmakeExtractor(Extractor):
                         continue
                     if i.body[1].contents.lower() != 'names' and i.body[1].contents.lower() not in FIND_LIBRARY_OPTIONS:
                         lib = Lib([i.body[1].contents], '',
-                                  self.target, func_body, "find_lib")
+                                  self.target, func_body)
                         self.libs_found.append(lib._asdict())
                     if i.body[1].contents.lower() == 'names':
                         names = []
@@ -194,7 +203,7 @@ class CmakeExtractor(Extractor):
                             if arg.contents.lower() in FIND_LIBRARY_OPTIONS:
                                 break
                             names.append(arg.contents)
-                        lib = Lib(names, '', self.target, func_body, "find_lib")
+                        lib = Lib(names, '', self.target, func_body)
                         self.libs_found.append(lib._asdict())
 
     def find_package_analyzer(self, contents):
@@ -220,7 +229,7 @@ class CmakeExtractor(Extractor):
                     else:
                         version = parse_version(i.body[1].contents, True)
                     dep = Dependency(dep_name, version)
-                    dep.add_evidence(self.type, func_body, self.target, 'High')
+                    dep.add_evidence(self.type, func_body, 'High')
                     self.add_dependency(dep)
 
 
@@ -241,7 +250,7 @@ class CmakeExtractor(Extractor):
                 if i.name.lower() == 'check_library_exists':
                     dep_name = i.body[0].contents
                     dep = Dependency(dep_name, None)
-                    dep.add_evidence(self.type, func_body, self.target, 'High')
+                    dep.add_evidence(self.type, func_body, 'High')
                     self.add_dependency(dep)
                     
 
@@ -288,8 +297,42 @@ class CmakeExtractor(Extractor):
                             continue
                         name, version, opperator_op = CmakeExtractor.parse_pkg_version(name)
                         dep = Dependency(name, version, opperator_op)
-                        dep.add_evidence(self.type+'::pkg', func_body, self.target, 'High')
+                        dep.add_evidence(self.type+'::pkg', func_body, 'High')
                         self.add_dependency(dep)
+
+    def conan_cmake_analyzer(self, contents):
+        pattern1 = 'conan_cmake_run\s*\('
+        pattern2 = 'conan_cmake_configure\s*\('
+        funcs1 = self.get_func_body(pattern1, contents)
+        funcs2 = self.get_func_body(pattern2, contents)
+        funcs = funcs1 + funcs2
+        for func_body in funcs:
+            try:
+                a = cmp.parse(func_body)
+            except Exception as e:
+                logger.error('cmake parsing error: '+self.target)
+                logger.error(e)
+                continue
+            for i in a:
+                if not isinstance(i, cmp._Command):
+                    continue
+                if i.name.lower() == 'conan_cmake_run' or i.name.lower() == 'conan_cmake_configure':
+                    if len(i.body) == 0:
+                        continue
+                    key_flag = 0
+                    for arg in i.body:
+                        if arg.contents.lower() == 'requires' or arg.contents.lower() == 'build_requires':
+                            key_flag = 1
+                            continue
+                        if key_flag == 1:
+                            if '/' in arg.contents and arg.contents.lower() not in CONAN_CMAKE_OPTIONS:
+                                name, version = ConanExtractor.parse_conan_package(
+                                    arg.contents)
+                                dep = Dependency(name, version, '=')
+                                dep.add_evidence(self.type+"::conan", func_body, 'High')
+                                self.add_dependency(dep)
+                            if arg.contents.lower() in CONAN_CMAKE_OPTIONS:
+                                key_flag = 0
 
     # collect all variables in cmake files and delete assignment loop.
     def cpm_analyzer(self, contents):
@@ -303,9 +346,22 @@ class CmakeExtractor(Extractor):
             if dep_name is None:
                 continue
             dep = Dependency(dep_name, version)
-            dep.add_evidence(self.type+'::cpm', func_body, self.target, 'High')
+            dep.add_evidence(self.type+'::cpm', func_body, 'High')
             self.add_dependency(dep)
-            
+
+
+    def hunter_analyzer(self, contents):
+        pattern = 'hunter_add_package\s*\('
+        funcs = self.get_func_body(pattern, contents)
+        for func_body in funcs:
+            dep_name  = hunter_func_analyzer(func_body)
+            if dep_name is None:
+                continue
+            dep = Dependency(dep_name, None)
+            dep.add_evidence(self.type+'::hunter', func_body, 'High')
+            self.add_dependency(dep)
+
+
 
     @staticmethod
     def collect_var(contents):
@@ -335,8 +391,11 @@ class CmakeExtractor(Extractor):
                 to_delete_keys.append(value)
         for key in set(to_delete_keys):
             del vars_name2value[key]
+
         return vars_name2value
 
+    # TODO: pkg_search_module, pkg_check_module, conan_cmake_run
+    # replace variables with their values in cmake files
 
     @staticmethod
     def var_replace(contents):
@@ -384,6 +443,6 @@ class CmakeExtractor(Extractor):
                 product = "lib" + product.lower()[0:-3]
             version = parse_version(version, True)
             dep = Dependency(product, version)
-            dep.add_evidence(self.type, v.group(0), self.target, 'Low')
+            dep.add_evidence(self.type, v.group(0), 'Low')
             self.add_dependency(dep)
             v = next(vers, None)

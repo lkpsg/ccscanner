@@ -12,10 +12,9 @@ class Dependency(object):
         self.version_op = operator
         self.add_unified_name()
 
-    def add_evidence(self, extractor_type, context, file_path, confidence):
+    def add_evidence(self, extractor_type, context, confidence):
         self.extractor_type = extractor_type
         self.context = context
-        self.fromfile = file_path
         self.confidence = confidence
     
     def add_unified_name(self):
