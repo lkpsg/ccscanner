@@ -6,8 +6,8 @@ with open("README_pip.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name="ccscanner",
     version="0.0.1",
-    author="Tang Wei",
-    author_email="tangwei.thu@gmail.com",
+    author="",
+    author_email="",
     description="A SBOM scanner for C/C++",
     long_description=long_description,
     long_description_content_type="text/markdown",
