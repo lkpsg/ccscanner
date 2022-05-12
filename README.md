@@ -1,18 +1,7 @@
-# ccscanner
+# Towards Understanding Third-party Library Dependency in C/C++ Ecosystem
 
-## Install
-```
-python setup.py install
-```
-of
-```
-pip install ccscanner
-```
+## Dataset
+All extracted dependencies
+https://figshare.com/articles/dataset/repo2dep_json/19752820
 
-## Usage
-run command:
-```
-$ ccscanner_print --dir ${directory to scan}
-```
-
-It will print all dependencies.
+##  ccscanner
