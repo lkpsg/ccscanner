@@ -10,7 +10,8 @@ This is a temporary repository to meet the Anonymous Review Policy. You can star
 Since Gitsubmodule and Buck module need some active tokens, such as GitHub token. We comment these modules in this anonymous version. You can still read the code. The upcoming version after paper is accepted will be full-featured.
 
 ### Install
-install dependencies
+CCScanner is written using Python3.
+Install dependencies.
 ```
 pip install json5
 ```
