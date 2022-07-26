@@ -1,7 +1,4 @@
-import os
-import re
 import logging
-from bs4 import BeautifulSoup
 
 
 from ccscanner.extractors.extractor import Extractor

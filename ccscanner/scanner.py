@@ -1,14 +1,19 @@
 import os
 import logging
 import json
+import sys
 
-from ccscanner.utils.utils import read_txt
+file_dir = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(os.path.join(file_dir, '..'))
+sys.path.insert(0, os.getcwd())
+import argparse
+
+from ccscanner.utils.utils import read_txt, save_js
 from ccscanner.extractors.conan_extractor import ConanExtractor
 from ccscanner.extractors.control_extractor import ControlExtractor
-from ccscanner.extractors.readme_extractor import ReadmeExtractor
 from ccscanner.extractors.cmake_extractor import CmakeExtractor
 from ccscanner.extractors.autoconf_extractor import AutoconfExtractor
-from ccscanner.extractors.submodule_extractor import SubmodExtractor
+# from ccscanner.extractors.submodule_extractor import SubmodExtractor
 from ccscanner.extractors.vcpkg_extractor import VcpkgExtractor
 from ccscanner.extractors.pkg_extractor import PkgExtractor
 from ccscanner.extractors.meson_extractor import MesonExtractor
@@ -17,10 +22,16 @@ from ccscanner.extractors.bazel_extractor import BazelExtractor
 from ccscanner.extractors.ms_extractor import MsExtractor
 from ccscanner.extractors.xmake_extractor import XmakeExtractor
 from ccscanner.extractors.make_extractor import MakeExtractor
-from ccscanner.extractors.buckaroo_extractor import BuckarooExtractor
+# from ccscanner.extractors.buckaroo_extractor import BuckarooExtractor
 from ccscanner.extractors.dds_extractor import DdsExtractor
-from ccscanner.extractors.buck_extractor import BuckExtractor
+# from ccscanner.extractors.buck_extractor import BuckExtractor
 from ccscanner.extractors.build2_extractor import Build2Extractor
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', type=str, default='',
+        help='set directory to scan')
+parser.add_argument('-t', type=str, default='results.json',
+        help='save results to file')
 
 CONF_FILES = ['configure', 'configure.in', 'configure.ac']
 logging.basicConfig()
@@ -38,10 +49,11 @@ class scanner(object):
             for filename in filenames:
                 extractor = None
                 filename_lower = filename.lower()
-                if filename_lower.startswith('readme'):
-                    extractor = ReadmeExtractor
-                    arg = os.path.join(root, filename)
-                elif filename_lower == 'control' or filename_lower.endswith('.dsc'):
+                ## TODO: readme module
+                # if filename_lower.startswith('readme'):
+                #     extractor = ReadmeExtractor
+                #     arg = os.path.join(root, filename)
+                if filename_lower == 'control' or filename_lower.endswith('.dsc'):
                     extractor = ControlExtractor
                     arg = os.path.join(root, filename)
                 elif filename == 'CMakeLists.txt' or filename.endswith('.cmake'):
@@ -50,9 +62,9 @@ class scanner(object):
                 elif filename_lower in CONF_FILES:
                     extractor = AutoconfExtractor
                     arg = os.path.join(root, filename)
-                elif filename == '.gitmodules':
-                    extractor = SubmodExtractor
-                    arg = root
+                # elif filename == '.gitmodules':
+                #     extractor = SubmodExtractor
+                #     arg = root
                 elif filename == 'vcpkg.json':
                     extractor = VcpkgExtractor
                     arg = os.path.join(root, filename)
@@ -80,13 +92,13 @@ class scanner(object):
                 elif filename == 'xmake.lua':
                     extractor = XmakeExtractor
                     arg = os.path.join(root, filename)
-                # elif filename in ['buckaroo.toml', 'buckaroo.lock.toml', '.buckconfig']:
-                elif filename in 'buckaroo.toml':
-                    extractor = BuckarooExtractor
-                    arg = os.path.join(root, filename)
-                elif filename == 'BUCK':
-                    extractor = BuckExtractor
-                    arg = os.path.join(root, filename)
+                ## elif filename in ['buckaroo.toml', 'buckaroo.lock.toml', '.buckconfig']:
+                # elif filename in 'buckaroo.toml':
+                #     extractor = BuckarooExtractor
+                #     arg = os.path.join(root, filename)
+                # elif filename == 'BUCK':
+                #     extractor = BuckExtractor
+                #     arg = os.path.join(root, filename)
                 elif filename.lower().startswith('makefile'):
                     extractor = MakeExtractor
                     arg = os.path.join(root, filename)
@@ -120,6 +132,14 @@ def test_scanner(target):
 if __name__ == '__main__':
     # target = 'data/targets/projects/wireshark'
     # target = 'data/data_debian/salsa_repo_src/a11y-team@@at-spi2-atk'
-    target = 'tmp/test_cmake'
+    # target = 'tests/test_data'
+    # res = test_scanner(target)
+    # print(res)
+
+
+    args = parser.parse_args()
+    target = args.d
+    save_file = args.t
     res = test_scanner(target)
-    print(res)
+    save_js(res, save_file)
+    
