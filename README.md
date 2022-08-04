@@ -13,7 +13,7 @@ Since Gitsubmodule and Buck module need some active tokens, such as GitHub token
 CCScanner is written using Python3.
 Install dependencies.
 ```
-pip install json5
+pip install json5 bs4
 ```
 
 

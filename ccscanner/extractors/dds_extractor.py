@@ -7,7 +7,6 @@ import json
 from ccscanner.extractors.extractor import Extractor
 from ccscanner.extractors.dependency import Dependency
 from ccscanner.utils.utils import read_js, read_json5
-from jsoncomment import JsonComment
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 

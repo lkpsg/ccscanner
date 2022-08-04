@@ -6,7 +6,6 @@ import sys
 import logging
 import os
 from bs4 import BeautifulSoup
-from jsoncomment import JsonComment
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
