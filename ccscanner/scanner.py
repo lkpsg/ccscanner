@@ -123,23 +123,19 @@ class scanner(object):
         return json.loads(json.dumps(self, default=lambda o: o.__dict__))
 
 
-def test_scanner(target):
+def main():
+    args = parser.parse_args()
+    target = args.d
+    save_file = args.t
     scanner_obj = scanner(target)
     res = scanner_obj.to_dict()
-    return res
+    save_js(res, save_file)
 
-
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # target = 'data/targets/projects/wireshark'
     # target = 'data/data_debian/salsa_repo_src/a11y-team@@at-spi2-atk'
     # target = 'tests/test_data'
     # res = test_scanner(target)
     # print(res)
 
-
-    args = parser.parse_args()
-    target = args.d
-    save_file = args.t
-    res = test_scanner(target)
-    save_js(res, save_file)
     

@@ -1,12 +1,16 @@
 import setuptools
 
-with open("README_pip.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+with open("README_pip.md", "r", encoding="utf-8") as read_f:
+    long_description = read_f.read()
     
+with open('ccscanner/requirements.txt', 'r') as read_f:
+    requires_list = read_f.readlines()
+requires_list = [i.strip() for i in requires_list]
+
 setuptools.setup(
     name="ccscanner",
-    version="0.0.1",
-    author="",
+    version="0.1.8",
+    author="anonymous repo",
     author_email="",
     description="A SBOM scanner for C/C++",
     long_description=long_description,
@@ -22,5 +26,6 @@ setuptools.setup(
         'console_scripts': [
             'ccscanner_print = ccscanner.scanner:main',
         ]
-    }
+    },
+    install_requires=requires_list
 )
