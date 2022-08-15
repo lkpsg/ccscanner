@@ -2,7 +2,7 @@
 
 ## Dataset
 All extracted dependencies
-https://figshare.com/articles/dataset/repo2dep_json/19752820
+https://figshare.com/s/9e2fd7a1389af8266bfe
 
 ##  CCScanner
 This is a temporary repository to meet the Anonymous Review Policy. You can start the trial by running "scanner.py". 
