@@ -3,7 +3,9 @@
 CCScanner 0.1.8 is released.
 20 extractors are added.
 
-TODO: add submodule extractor and Buck extractor. They need access tokens. We would release a public version after our paper is accepted.
+TODO: add submodule extractor and Buck extractor. They need access tokens.
+
+Centris is available at: https://github.com/WOOSEUNGHOON/Centris-public.
 
 ## Install
 ```
