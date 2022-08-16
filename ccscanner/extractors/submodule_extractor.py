@@ -6,9 +6,9 @@ import requests
 import random
 from ccscanner.extractors.extractor import Extractor
 from ccscanner.utils.utils import read_js, save_js, read_lines, remove_rstrip
-from ccscanner.config import ACCESS_TOKENS, SUBMODS
 from ccscanner.extractors.dependency import Dependency
 
+SUBMODS = 'ccscanner/data/submods.json'
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ existing_submods = read_js(SUBMODS)
 class SubmodExtractor(Extractor):
     def __init__(self, repo_path) -> None:
         super().__init__()
-        self.type = 'submod'
+        self.type = 'gitsubmod'
         self.target = repo_path
         self.submods = []
     
@@ -86,6 +86,8 @@ class SubmodExtractor(Extractor):
                     continue
                 key, value = line.split('=', 1)
                 item[key.strip(' \t')] = value.strip(' \t')
+        if len(item) > 0:
+            self.submods.append(item)
                     
 
     def parse_url(self, url):
@@ -98,18 +100,19 @@ class SubmodExtractor(Extractor):
                     return None
                 else:
                     return dep_name
-            url = 'https://api.github.com/repos/{0}/{1}'.format(owner, dep_name)
-            try:
-                info = requests.get(url.format(owner, dep_name), headers={
-                            "Authorization": "token " + ACCESS_TOKENS[random.randint(0, len(ACCESS_TOKENS)-1)]}).json()
-                if 'language' in info:
-                    existing_submods[owner+'@@'+dep_name] = info['language']
-                    save_js(existing_submods, SUBMODS)
-                    if info['language'] not in ['C', 'C++']:
-                        return None
-                    else:
-                        return dep_name
-            except Exception as e:
-                print(e)
+            return dep_name
+            # url = 'https://api.github.com/repos/{0}/{1}'.format(owner, dep_name)
+            # try:
+            #     info = requests.get(url.format(owner, dep_name), headers={
+            #                 "Authorization": "token " + ACCESS_TOKENS[random.randint(0, len(ACCESS_TOKENS)-1)]}).json()
+            #     if 'language' in info:
+            #         existing_submods[owner+'@@'+dep_name] = info['language']
+            #         save_js(existing_submods, SUBMODS)
+            #         if info['language'] not in ['C', 'C++']:
+            #             return None
+            #         else:
+            #             return dep_name
+            # except Exception as e:
+            #     print(e)
         else:
             return None

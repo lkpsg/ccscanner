@@ -9,7 +9,7 @@ requires_list = [i.strip() for i in requires_list]
 
 setuptools.setup(
     name="ccscanner",
-    version="0.1.8",
+    version="0.1.9",
     author="anonymous repo",
     author_email="",
     description="A SBOM scanner for C/C++",

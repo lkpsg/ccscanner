@@ -1,23 +1,22 @@
 # Towards Understanding Third-party Library Dependency in C/C++ Ecosystem
 
 ## Dataset
-All extracted dependencies
+All extracted dependencies and ground truth
 https://figshare.com/s/9e2fd7a1389af8266bfe
 
 ##  CCScanner
-This is a temporary repository to meet the Anonymous Review Policy. You can start the trial by running "scanner.py". 
-
-Since Gitsubmodule and Buck module need some active tokens, such as GitHub token. We comment these modules in this anonymous version. You can still read the code.
+This is a temporary repository to meet the Anonymous Review Policy. You can try to use it by running "scanner.py" or install the pip package "ccscanner".
 
 Centris is available at: https://github.com/WOOSEUNGHOON/Centris-public.
+
+results.json contains the extracted dependencies from "tests/test_data".
 
 ### Install
 CCScanner is written using Python3.
 Install dependencies.
 ```·
-pip install json5 bs4
+pip install json5 bs4 GitPython lxml
 ```
-
 
 ### Usage
 run command:
@@ -28,7 +27,6 @@ python ccscanner/scanner.py -d $directory_to_scan -t $results_json_file
 All results will be saved to a json files. The default path to save results is ```./results.json```.
 
 ```Deps``` field in results is all extracted dependencies.
-
 
 ### Pip package
 We have released a pip package. You can try to use it.

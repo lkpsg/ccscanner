@@ -13,7 +13,7 @@ from ccscanner.extractors.conan_extractor import ConanExtractor
 from ccscanner.extractors.control_extractor import ControlExtractor
 from ccscanner.extractors.cmake_extractor import CmakeExtractor
 from ccscanner.extractors.autoconf_extractor import AutoconfExtractor
-# from ccscanner.extractors.submodule_extractor import SubmodExtractor
+from ccscanner.extractors.submodule_extractor import SubmodExtractor
 from ccscanner.extractors.vcpkg_extractor import VcpkgExtractor
 from ccscanner.extractors.pkg_extractor import PkgExtractor
 from ccscanner.extractors.meson_extractor import MesonExtractor
@@ -62,9 +62,9 @@ class scanner(object):
                 elif filename_lower in CONF_FILES:
                     extractor = AutoconfExtractor
                     arg = os.path.join(root, filename)
-                # elif filename == '.gitmodules':
-                #     extractor = SubmodExtractor
-                #     arg = root
+                elif filename == '.gitmodules':
+                    extractor = SubmodExtractor
+                    arg = root
                 elif filename == 'vcpkg.json':
                     extractor = VcpkgExtractor
                     arg = os.path.join(root, filename)
@@ -131,7 +131,9 @@ def main():
     res = scanner_obj.to_dict()
     save_js(res, save_file)
 
-# if __name__ == '__main__':
+
+if __name__ == '__main__':
+    main()
     # target = 'data/targets/projects/wireshark'
     # target = 'data/data_debian/salsa_repo_src/a11y-team@@at-spi2-atk'
     # target = 'tests/test_data'
