@@ -1,9 +1,9 @@
 # Towards Understanding Third-party Library Dependency in C/C++ Ecosystem
 
 ## Dataset
-All extracted dependencies and ground truth
-https://figshare.com/s/9e2fd7a1389af8266bfe
+All extracted dependencies and ground truth are available at: https://figshare.com/s/9e2fd7a1389af8266bfe
 
+Detection targets can be downloaded from official GitHub repositories or official websites.
 ##  CCScanner
 This is a temporary repository to meet the Anonymous Review Policy. You can try to use it by running "scanner.py" or install the pip package "ccscanner".
 
