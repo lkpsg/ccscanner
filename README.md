@@ -5,7 +5,9 @@ All extracted dependencies and ground truth are available at: https://figshare.c
 
 Detection targets can be downloaded from official GitHub repositories or official websites.
 ##  CCScanner
-This is a temporary repository to meet the Anonymous Review Policy. You can try to use it by running "scanner.py" or install the pip package "ccscanner".
+CCScanner is a dependency scanner for C/C++ software. More details can be seen in our paper, [Towards Understanding Third-party Library Dependency in C/C++ Ecosystem](https://arxiv.org/abs/2209.02575).
+
+You can try to use it by running "scanner.py" or install the pip package "ccscanner".
 
 Centris is available at: https://github.com/WOOSEUNGHOON/Centris-public.
 
