@@ -1,12 +1,11 @@
 import sys
 import os
-# sys.path.append(os.getcwd())
+sys.path.append(os.getcwd())
 from ccscanner.scanner import scanner
 
 def test_scanner(target):
     scanner_obj = scanner(target)
-    res = scanner_obj.deps
-    return res
+    return scanner_obj.extractors
 
 
 if __name__ == '__main__':
