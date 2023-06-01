@@ -9,6 +9,8 @@ CCScanner is a dependency scanner for C/C++ software. More details can be seen i
 
 You can try to use it by running "scanner.py" or install the pip package "ccscanner".
 
+**Please note that the code of Centris module is not contained in this repo.**
+
 Centris is available at: https://github.com/WOOSEUNGHOON/Centris-public.
 
 results.json contains the extracted dependencies from "tests/test_data".
