@@ -19,7 +19,11 @@ results.json contains the extracted dependencies from "tests/test_data".
 CCScanner is written using Python3.
 Install dependencies.
 ```·
-pip install json5 bs4 GitPython lxml
+pip install json5 bs4 GitPython lxml requests
+```
+Or
+```·
+pip install -r requirements.txt
 ```
 
 ### Usage
